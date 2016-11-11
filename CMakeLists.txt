@@ -1,75 +1,51 @@
 cmake_minimum_required(VERSION 2.8.8)
 include(ExternalProject)
 
-set(REPAST_INSTALL_DIR ${REPAST_DIR}/INSTALLATION)
+set(INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
+
+set(REPAST_DIR ${CMAKE_BINARY_DIR}/src/project_repast)
 set(REPAST_SRC_DIR ${REPAST_DIR}/src/repast_hpc)
+set(REPAST_EXT_DIR ${REPAST_DIR}/ext)
+set(REPAST_INSTALL_DIR ${REPAST_DIR}/INSTALLATION)
 
 ExternalProject_Add(project_repast
-  DOWNLOAD_DIR      ${DEPS_DIR}
+  DOWNLOAD_DIR     
   LOG_DOWNLOAD 1   # Wrap download in script to log output
-  DOWNLOAD_COMMAND  tar -C src/project_repast -xvf RHPC_2.0.tar.gz --strip-components=2
-  PREFIX ${DEPS_DIR}
+  DOWNLOAD_COMMAND  tar -C ${REPAST_DIR} -xvf ${PROJECT_SOURCE_DIR}/RHPC_2.0.tar.gz --strip-components=2
+  PREFIX ${CMAKE_BINARY_DIR}
   CONFIGURE_COMMAND ""
 
   PATCH_COMMAND ${CMAKE_COMMAND} -DBUILD_STEP=patch
     -DREPAST_SRC_DIR=${REPAST_SRC_DIR}
     -DPATCH_DIR=${PROJECT_SOURCE_DIR}/patches
     -DLOG_DIR=${CMAKE_BINARY_DIR}
-    -P ${DEPS_DIR}/project_repast.cmake
+    -P ${PROJECT_SOURCE_DIR}/project_repast.cmake
 
   #--Build step-----------------
   BUILD_IN_SOURCE 1 # Use source dir for build dir
-  BUILD_COMMAND ""
-
-  INSTALL_COMMAND cmake -DBUILD_STEP=install -DWORK_DIR=${REPAST_INSTALL_DIR} 
+  BUILD_COMMAND cmake -DBUILD_STEP=install -DWORK_DIR=${REPAST_INSTALL_DIR} 
     -DLOG_DIR=${CMAKE_BINARY_DIR}
     -DREPAST_EXT_DIR=${REPAST_EXT_DIR}
-    -P ${DEPS_DIR}/project_repast.cmake
+    -P ${PROJECT_SOURCE_DIR}/project_repast.cmake
+
+  INSTALL_COMMAND ${PROJECT_SOURCE_DIR}/project_repast-install.sh ${INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/src
+
 )
 
-# ExternalProject_Add(project_visit
-#   DOWNLOAD_DIR      ${DEPS_DIR}
-#   LOG_DOWNLOAD 1   # Wrap download in script to log output
-#   URL http://portal.nersc.gov/project/visit/releases/2.9.2/visit2.9.2.tar.gz
-#   PREFIX ${DEPS_DIR}
-#   CONFIGURE_COMMAND ""
-# 
-#   PATCH_COMMAND ${CMAKE_COMMAND} -DBUILD_STEP=patch
-#     -DVISIT_SVN_BIN_DIR=${VISIT_SVN_BIN_DIR}
-#     -DPATCH_DIR=${PROJECT_SOURCE_DIR}/patches
-#     -DLOG_DIR=${CMAKE_BINARY_DIR}
-#     -P ${DEPS_DIR}/project_visit.cmake
-# 
-#   #--Build step-----------------
-#   BUILD_IN_SOURCE 1 # Use source dir for build dir
-# 
-#   BUILD_COMMAND cmake  -DBUILD_STEP=build
-#     -DDEPS_DIR=${DEPS_DIR}
-#     -DVISIT_DIR=${VISIT_DIR}
-#     -DVISIT_SVN_BIN_DIR=${VISIT_SVN_BIN_DIR}
-#     -DLOG_DIR=${CMAKE_BINAY_DIR}
-#     -P ${DEPS_DIR}/project_visit.cmake
-# 
-#   INSTALL_COMMAND ""
-# )
-
-#ExternalProject_Add_Step(project_visit after_install
-  #COMMAND cmake -DBUILD_STEP=get_visit_platform.sh -DVISIT_DIR=${VISIT_DIR}
-  #DEPENDEES mkdir update patch download configure build install 
-  #ALWAYS 1
-  #)
+set(COPASI_DEPS_DIR ${CMAKE_BINARY_DIR}/src/project_copasi_deps)
 
 if (APPLE)
-  set(COPASI_DEPS_BUILD_SCRIPT ./createOSX.sh)
+  set(COPASI_DEPS_BUILD_COMMAND ${COPASI_DEPS_DIR}/createOSX.sh)
 else()
-  set(COPASI_DEPS_BUILD_SCRIPT ./createLinux.sh)
+  set(COPASI_DEPS_BUILD_COMMAND ${COPASI_DEPS_DIR}/createLinux.sh)
 endif()
 
 ExternalProject_Add(project_copasi_deps
-  DOWNLOAD_DIR      ${DEPS_DIR}
+  DOWNLOAD_DIR      
   LOG_DOWNLOAD 1   # Wrap download in script to log output
   GIT_REPOSITORY https://github.com/copasi/copasi-dependencies
-  PREFIX ${DEPS_DIR}
+  GIT_TAG fb30446b0fd97dc0b936921d781e2a25e6514d02
+  PREFIX ${CMAKE_BINARY_DIR}
 
   UPDATE_COMMAND "" # Prevent a GIT PULL request
   CONFIGURE_COMMAND ""
@@ -77,17 +53,20 @@ ExternalProject_Add(project_copasi_deps
   #--Build step-----------------
   LOG_BUILD 1       # Wrap build in script to log output
   BUILD_IN_SOURCE 1 # Use source dir for build dir
-  BUILD_COMMAND ${COPASI_DEPS_BUILD_SCRIPT}
 
-  INSTALL_COMMAND ""
+  BUILD_COMMAND ${COPASI_DEPS_BUILD_COMMAND} expat raptor clapack libSBML libSEDML
+
+  INSTALL_COMMAND ${PROJECT_SOURCE_DIR}/project_copasi_deps-install.sh ${INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/src
 )
 
+set(COPASI_DIR ${CMAKE_BINARY_DIR}/src/project_copasi)
+
 ExternalProject_Add(project_copasi
-  DOWNLOAD_DIR      ${DEPS_DIR}
+  DOWNLOAD_DIR      
   LOG_DOWNLOAD 1   # Wrap download in script to log output
   GIT_REPOSITORY https://github.com/copasi/COPASI
   GIT_TAG Build-104
-  PREFIX ${DEPS_DIR}
+  PREFIX ${CMAKE_BINARY_DIR}
 
   UPDATE_COMMAND "" # Prevent a GIT PULL request
 
@@ -97,18 +76,18 @@ ExternalProject_Add(project_copasi
   #LOG_CONFIGURE 1      # Wrap configure in script to log output
 
   CONFIGURE_COMMAND cmake -DBUILD_GUI=OFF
-    -DCMAKE_INSTALL_PREFIX=./copasi_install
-    -DCOPASI_DEPENDENCY_DIR=${DEPS_DIR}/src/project_copasi_deps/bin
-    ../project_copasi &> ${CMAKE_BINARY_DIR}/project_copasi-configure.log
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
+    -DCOPASI_DEPENDENCY_DIR=${INSTALL_PREFIX}
+    ../project_copasi 
 
 
   #--Build step-----------------
   LOG_BUILD 1       # Wrap build in script to log output
-  BUILD_COMMAND make
+  BUILD_COMMAND make -j 4
 
   #--Install step-----------------
   LOG_INSTALL 1       # Wrap install in script to log output
-  INSTALL_COMMAND make install
+  INSTALL_COMMAND ${PROJECT_SOURCE_DIR}/project_copasi-install.sh ${INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/src
 )
 
 add_dependencies(project_copasi project_copasi_deps)
