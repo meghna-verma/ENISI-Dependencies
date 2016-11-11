@@ -11,19 +11,27 @@ if("${BUILD_STEP}" STREQUAL "patch")
       SharedDiscreteSpace.h
       UndirectedVertex.h)
 
-    message(STATUS "Patching: " ${REPAST_SRC_DIR}/${REPAST_PATCH})
+    message(STATUS "Patching: " ${REPAST_DIR}/src/repast_hpc/${REPAST_PATCH})
 
     execute_process(
-        COMMAND patch ${REPAST_SRC_DIR}/${REPAST_PATCH} -i ${REPAST_PATCH}.patch
+        COMMAND patch ${REPAST_DIR}/src/repast_hpc/${REPAST_PATCH} -i ${REPAST_PATCH}.patch
         WORKING_DIRECTORY ${PATCH_DIR}
         OUTPUT_FILE ${LOG_DIR}/repast_patch.log
         ERROR_FILE ${LOG_DIR}/repast_patch_errors.log)
 
-   endforeach(REPAST_PATCH)
+  endforeach(REPAST_PATCH)
+
+  message(STATUS "Patching: " ${REPAST_DIR}/INSTALLATION/install.sh)
+
+  execute_process(
+      COMMAND patch ${REPAST_DIR}/INSTALLATION/install.sh -i install.sh.patch
+      WORKING_DIRECTORY ${PATCH_DIR}
+      OUTPUT_FILE ${LOG_DIR}/repast_patch.log
+      ERROR_FILE ${LOG_DIR}/repast_patch_errors.log)
 endif()
 
 if("${BUILD_STEP}" STREQUAL "install")
-  if (NOT EXISTS .mpich_install_done)
+  if (NOT EXISTS .mpich_install_done AND ${MPI_CXX_COMPILER} STREQUAL "" )
     message(STATUS "Installing MPICH...")
     file(REMOVE_RECURSE ${REPAST_EXT_DIR}/MPICH)
     execute_process(
@@ -38,7 +46,7 @@ if("${BUILD_STEP}" STREQUAL "install")
   if (NOT EXISTS .boost_install_done)
     message(STATUS "Installing Boost...")
     file(REMOVE_RECURSE ${REPAST_EXT_DIR}/Boost)
-    execute_process(COMMAND bash ./install.sh boost 
+    execute_process(COMMAND bash ./install.sh boost ${MPI_CXX_COMPILER}
       WORKING_DIRECTORY ${WORK_DIR}
       OUTPUT_FILE ${LOG_DIR}/boost_install.log
       ERROR_FILE ${LOG_DIR}/boost_install_errors.log
@@ -70,7 +78,7 @@ if("${BUILD_STEP}" STREQUAL "install")
 
   if (NOT EXISTS ${REPAST_DIR}/lib/librepast_hpc-2.0.a)
     message(STATUS "Installing Repast HPC libraries...")
-    execute_process(COMMAND bash ./install.sh rhpc
+    execute_process(COMMAND bash ./install.sh rhpc "${MPI_CXX_COMPILER}" "${MPI_CXX_LINK_FLAGS}"
       WORKING_DIRECTORY ${WORK_DIR}
       OUTPUT_FILE ${LOG_DIR}/rhpc_install.log
       ERROR_FILE ${LOG_DIR}/rhpc_install_errors.log

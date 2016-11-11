@@ -3,8 +3,24 @@ include(ExternalProject)
 
 set(INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
 
+find_package(MPI)
+
+if (MPI_CXX_FOUND)
+  message(STATUS "-----------------------------------------------------------
+    MPI_CXX_COMPILER        ${MPI_CXX_COMPILER}
+    MPI_CXX_COMPILE_FLAGS   ${MPI_CXX_COMPILE_FLAGS}
+    MPI_CXX_INCLUDE_PATH    ${MPI_CXX_INCLUDE_PATH}
+    MPI_CXX_LINK_FLAGS      ${MPI_CXX_LINK_FLAGS}
+    MPI_CXX_LIBRARIES       ${MPI_CXX_LIBRARIES}
+  ")
+
+  set(REPAST_INSTALL_MPI OFF)
+else()
+  set(MPI_CXX_COMPILER "")
+  set(REPAST_INSTALL_MPI ON)
+endif()
+
 set(REPAST_DIR ${CMAKE_BINARY_DIR}/src/project_repast)
-set(REPAST_SRC_DIR ${REPAST_DIR}/src/repast_hpc)
 set(REPAST_EXT_DIR ${REPAST_DIR}/ext)
 set(REPAST_INSTALL_DIR ${REPAST_DIR}/INSTALLATION)
 
@@ -16,7 +32,7 @@ ExternalProject_Add(project_repast
   CONFIGURE_COMMAND ""
 
   PATCH_COMMAND ${CMAKE_COMMAND} -DBUILD_STEP=patch
-    -DREPAST_SRC_DIR=${REPAST_SRC_DIR}
+    -DREPAST_DIR=${REPAST_DIR}
     -DPATCH_DIR=${PROJECT_SOURCE_DIR}/patches
     -DLOG_DIR=${CMAKE_BINARY_DIR}
     -P ${PROJECT_SOURCE_DIR}/project_repast.cmake
@@ -24,12 +40,13 @@ ExternalProject_Add(project_repast
   #--Build step-----------------
   BUILD_IN_SOURCE 1 # Use source dir for build dir
   BUILD_COMMAND cmake -DBUILD_STEP=install -DWORK_DIR=${REPAST_INSTALL_DIR} 
+    -DMPI_CXX_COMPILER=${MPI_CXX_COMPILER}
+    -DMPI_CXX_LINK_FLAGS=${MPI_CXX_LINK_FLAGS}
     -DLOG_DIR=${CMAKE_BINARY_DIR}
     -DREPAST_EXT_DIR=${REPAST_EXT_DIR}
     -P ${PROJECT_SOURCE_DIR}/project_repast.cmake
 
-  INSTALL_COMMAND ${PROJECT_SOURCE_DIR}/project_repast-install.sh ${INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/src
-
+  INSTALL_COMMAND ${PROJECT_SOURCE_DIR}/project_repast-install.sh ${INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/src ${REPAST_INSTALL_MPI}
 )
 
 set(COPASI_DEPS_DIR ${CMAKE_BINARY_DIR}/src/project_copasi_deps)
