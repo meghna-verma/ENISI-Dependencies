@@ -31,8 +31,7 @@ if("${BUILD_STEP}" STREQUAL "patch")
 endif()
 
 if("${BUILD_STEP}" STREQUAL "install")
-  if (NOT EXISTS .mpich_install_done AND 
-      (NOT ${MPI_CXX_COMPILER} OR ${MPI_CXX_COMPILER} STREQUAL "" ))
+  if (NOT EXISTS .mpich_install_done AND NOT MPI_CXX_COMPILER)
     message(STATUS "Installing MPICH...")
     file(REMOVE_RECURSE ${REPAST_EXT_DIR}/MPICH)
     execute_process(
