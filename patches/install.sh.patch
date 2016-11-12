@@ -1,5 +1,5 @@
---- original/install.sh	2016-11-11 18:49:07.941538598 -0500
-+++ install.sh	2016-11-11 18:50:33.601167140 -0500
+--- original/install.sh	2016-11-11 19:39:52.450576348 -0500
++++ install.sh	2016-11-11 19:39:21.813279849 -0500
 @@ -7,8 +7,9 @@
  BASE_DIR=$PWD/ext/
  cd INSTALLATION
@@ -49,7 +49,7 @@
      tar -xvf netcdf-cxx-4.2.tar.gz
      cd netcdf-cxx-4.2
 -    env CPPFLAGS=-I$BASE_DIR/NetCDF/include LDFLAGS=-L$BASE_DIR/NetCDF/lib ./configure --prefix=$BASE_DIR/NetCDF
-+    env CPPFLAGS=-I$BASE_DIR/NetCDF/include LDFLAGS=-L$BASE_DIR/NetCDF/lib ./configure --prefix="${INSTALL_PREFIX}"
++    env CPPFLAGS=-I"${INSTALL_PREFIX}"/include LDFLAGS=-L"${INSTALL_PREFIX}"/lib ./configure --prefix="${INSTALL_PREFIX}"
      make
      make install
      cd ..
