@@ -1,30 +1,74 @@
---- /home/shoops/code/ENISI/deps/src/project_repast/INSTALLATION/install.sh	2013-08-13 11:15:31.000000000 -0400
-+++ install.sh	2016-11-11 15:25:16.470829000 -0500
-@@ -7,8 +7,8 @@
+--- original/install.sh	2016-11-11 18:49:07.941538598 -0500
++++ install.sh	2016-11-11 18:50:33.601167140 -0500
+@@ -7,8 +7,9 @@
  BASE_DIR=$PWD/ext/
  cd INSTALLATION
  
 -MPI_COMPILER_INVOCATION=$BASE_DIR/MPICH/bin/mpicxx
 -
-+MPI_CXX_COMPILER="${2:-${BASE_DIR}/MPICH/bin/mpicxx}"
-+MPI_CXX_LINK_FLAGS="${3:--static}"
++INSTALL_PREFIX="${2}"
++MPI_CXX_COMPILER="${3:-${INSTALL_PREFIX}/bin/mpicxx}"
++MPI_CXX_LINK_FLAGS="${4:--static}"
  
  # cURL
  if [[ $1 == *lcurl* ]]
-@@ -115,7 +115,7 @@
+@@ -25,7 +26,7 @@
+   fi 
+   tar -xvf curl-7.32.0.tar.gz
+   cd curl-7.32.0
+-  ./configure --prefix=$BASE_DIR/CURL
++  ./configure --prefix="${INSTALL_PREFIX}"
+   make
+   make install
+   cd ..
+@@ -47,11 +48,11 @@
+   fi 
+   tar -xvf mpich2-1.4.1p1.tar.gz
+   cd mpich2-1.4.1p1
+-  ./configure --prefix=$BASE_DIR/MPICH --disable-f77 --disable-fc
++  ./configure --prefix="${INSTALL_PREFIX}" --disable-f77 --disable-fc
+   make
+   make install
+   cd ..
+-  export PATH=$BASE_DIR/MPICH/bin/:$PATH
++  export PATH="${INSTALL_PREFIX}"/bin/:$PATH
+ fi
+ 
+ # NETCDF
+@@ -71,7 +72,7 @@
+   mkdir $BASE_DIR/NetCDF
+   tar -xvf netcdf-4.2.1.1.tar.gz
+   cd netcdf-4.2.1.1
+-  ./configure --disable-netcdf-4 --prefix=$BASE_DIR/NetCDF
++  ./configure --disable-netcdf-4 --prefix="${INSTALL_PREFIX}"
+   make
+   make install
+   cd ..
+@@ -87,7 +88,7 @@
+     fi 
+     tar -xvf netcdf-cxx-4.2.tar.gz
+     cd netcdf-cxx-4.2
+-    env CPPFLAGS=-I$BASE_DIR/NetCDF/include LDFLAGS=-L$BASE_DIR/NetCDF/lib ./configure --prefix=$BASE_DIR/NetCDF
++    env CPPFLAGS=-I$BASE_DIR/NetCDF/include LDFLAGS=-L$BASE_DIR/NetCDF/lib ./configure --prefix="${INSTALL_PREFIX}"
+     make
+     make install
+     cd ..
+@@ -114,8 +115,8 @@
+   mkdir -p $BASE_DIR/Boost/Boost_1.54/include
    cp -r ./boost_1_54_0/boost $BASE_DIR/Boost/Boost_1.54/include
    cd boost_1_54_0
-   ./bootstrap.sh --prefix=$BASE_DIR/Boost/Boost_1.54/ --with-libraries=system,filesystem,mpi,serialization
+-  ./bootstrap.sh --prefix=$BASE_DIR/Boost/Boost_1.54/ --with-libraries=system,filesystem,mpi,serialization
 -  echo "using mpi : $MPI_COMPILER_INVOCATION ;" >>./tools/build/v2/user-config.jam
++  ./bootstrap.sh --prefix="${INSTALL_PREFIX}" --with-libraries=system,filesystem,mpi,serialization
 +  echo "using mpi : $MPI_CXX_COMPILER ;" >>./tools/build/v2/user-config.jam
    ./b2 --layout=tagged link=static variant=release threading=multi runtime-link=static stage install
    cd ..
  fi
-@@ -123,6 +123,6 @@
+@@ -123,6 +124,6 @@
  # Repast HPC
  if [[ $1 == *rhpc* ]]
  then
 -  make -f Makefile CXX=$MPI_COMPILER_INVOCATION CXXLD="$MPI_COMPILER_INVOCATION -static" BOOST_INCLUDE_DIR=$BASE_DIR/Boost/Boost_1.54/include BOOST_LIB_DIR=$BASE_DIR/Boost/Boost_1.54/lib BOOST_INFIX=-mt-s NETCDF_INCLUDE_DIR=$BASE_DIR/NetCDF/include NETCDF_LIB_DIR=$BASE_DIR/NetCDF/lib CURL_INCLUDE_DIR=$BASE_DIR/CURL/include CURL_LIB_DIR=$BASE_DIR/CURL/lib
-+  make -f Makefile CXX="${MPI_CXX_COMPILER}" CXXLD="$MPI_CXX_COMPILER $MPI_CXX_LINK_FLAGS" BOOST_INCLUDE_DIR=$BASE_DIR/Boost/Boost_1.54/include BOOST_LIB_DIR=$BASE_DIR/Boost/Boost_1.54/lib BOOST_INFIX=-mt-s NETCDF_INCLUDE_DIR=$BASE_DIR/NetCDF/include NETCDF_LIB_DIR=$BASE_DIR/NetCDF/lib CURL_INCLUDE_DIR=$BASE_DIR/CURL/include CURL_LIB_DIR=$BASE_DIR/CURL/lib
++  make -f Makefile CXX="${MPI_CXX_COMPILER}" CXXLD="$MPI_CXX_COMPILER $MPI_CXX_LINK_FLAGS" BOOST_INCLUDE_DIR="${INSTALL_PREFIX}"/include BOOST_LIB_DIR="${INSTALL_PREFIX}"/lib BOOST_INFIX=-mt-s NETCDF_INCLUDE_DIR="${INSTALL_PREFIX}"/include NETCDF_LIB_DIR="${INSTALL_PREFIX}"/lib CURL_INCLUDE_DIR="${INSTALL_PREFIX}"/include CURL_LIB_DIR="${INSTALL_PREFIX}"/lib
  fi
  
