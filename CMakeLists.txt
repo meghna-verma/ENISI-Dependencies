@@ -1,18 +1,30 @@
 cmake_minimum_required(VERSION 2.8.8)
 include(ExternalProject)
 
-set(INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
+set(INSTALL_PREFIX "" CACHE PATH "Installation directory for ENISI Dependencies" )
+mark_as_advanced(INSTALL_PREFIX)
+
+if ("${INSTALL_PREFIX}" STREQUAL "")
+  message (STATUS "
+------------------------------------------------------------------------------
+    You may overide the default installation direcory:
+       ${PROJECT_SOURCE_DIR}/install
+    by specifying  
+       -DINSTALL_PREFIX=<...>
+------------------------------------------------------------------------------")
+endif()
 
 find_package(MPI)
 
 if (MPI_CXX_FOUND)
-  message(STATUS "-----------------------------------------------------------
+  message(STATUS "
+------------------------------------------------------------------------------
     MPI_CXX_COMPILER        ${MPI_CXX_COMPILER}
     MPI_CXX_COMPILE_FLAGS   ${MPI_CXX_COMPILE_FLAGS}
     MPI_CXX_INCLUDE_PATH    ${MPI_CXX_INCLUDE_PATH}
     MPI_CXX_LINK_FLAGS      ${MPI_CXX_LINK_FLAGS}
     MPI_CXX_LIBRARIES       ${MPI_CXX_LIBRARIES}
-  ")
+------------------------------------------------------------------------------")
 else()
   set(MPI_CXX_COMPILER "")
   set(MPI_CXX_COMPILE_FLAGS "")
