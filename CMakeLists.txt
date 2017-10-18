@@ -75,7 +75,7 @@ ExternalProject_Add(project_copasi_deps
   DOWNLOAD_DIR      
   LOG_DOWNLOAD 1   # Wrap download in script to log output
   GIT_REPOSITORY https://github.com/copasi/copasi-dependencies
-  GIT_TAG fb30446b0fd97dc0b936921d781e2a25e6514d02
+  GIT_TAG a65ba6c93202e04aa07c0c1afd4b4d19465b779f
   PREFIX ${CMAKE_BINARY_DIR}
 
   UPDATE_COMMAND "" # Prevent a GIT PULL request
@@ -85,7 +85,7 @@ ExternalProject_Add(project_copasi_deps
   LOG_BUILD 1       # Wrap build in script to log output
   BUILD_IN_SOURCE 1 # Use source dir for build dir
 
-  BUILD_COMMAND ${COPASI_DEPS_BUILD_COMMAND} expat raptor clapack libSBML libSEDML
+  BUILD_COMMAND ${COPASI_DEPS_BUILD_COMMAND} expat raptor clapack libSBML libnuml libSEDML
 
   INSTALL_COMMAND ${PROJECT_SOURCE_DIR}/project_copasi_deps-install.sh ${INSTALL_PREFIX} ${CMAKE_BINARY_DIR}/src
 )
@@ -96,7 +96,7 @@ ExternalProject_Add(project_copasi
   DOWNLOAD_DIR      
   LOG_DOWNLOAD 1   # Wrap download in script to log output
   GIT_REPOSITORY https://github.com/copasi/COPASI
-  GIT_TAG Build-104
+  GIT_TAG Build-166
   PREFIX ${CMAKE_BINARY_DIR}
 
   UPDATE_COMMAND "" # Prevent a GIT PULL request
