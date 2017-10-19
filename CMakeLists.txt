@@ -75,7 +75,7 @@ ExternalProject_Add(project_copasi_deps
   DOWNLOAD_DIR      
   LOG_DOWNLOAD 1   # Wrap download in script to log output
   GIT_REPOSITORY https://github.com/copasi/copasi-dependencies
-  GIT_TAG a65ba6c93202e04aa07c0c1afd4b4d19465b779f
+  GIT_TAG 05203e01bff95292ce1644cedf784b6f06d46600
   PREFIX ${CMAKE_BINARY_DIR}
 
   UPDATE_COMMAND "" # Prevent a GIT PULL request
