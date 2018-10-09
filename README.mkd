@@ -1,0 +1,9 @@
+# BUILDING ENISI MSM Dependencies
+
+```
+  mkdir build
+  cd build
+  cmake ../
+  make
+```
+
